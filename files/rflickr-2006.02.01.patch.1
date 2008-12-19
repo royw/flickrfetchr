@@ -1,0 +1,38 @@
+diff -Naur lib.orig/flickr/base.rb lib/flickr/base.rb
+--- lib.orig/flickr/base.rb	2008-07-08 17:22:42.000000000 -0500
++++ lib/flickr/base.rb	2008-07-08 17:26:24.000000000 -0500
+@@ -164,6 +164,13 @@
+ 			return REXML::Document.new('<rsp>'+str+'</rsp>').
+ 				elements['/rsp']
+ 		rescue XMLRPC::FaultException => fe
++			# retry when the Flickr API service is not currently available
++		        if fe.faultCode == 0
++                                if tries > 0
++                                        sleep 1
++                                        retry
++                                end
++		        end
+ 			$stderr.puts "ERR: #{fe.faultString} (#{fe.faultCode})"
+ 			raise fe
+ 		end
+@@ -641,7 +648,7 @@
+ 
+ 	def author() @author_id && @flickr.people.getInfo(@author_id) end
+ 
+-	def from_xml(xml,photo=nil)
++	def self.from_xml(xml,photo=nil)
+ 		att = xml.attributes
+ 		note = Flickr::Note.new(att['x'].to_i,att['y'].to_i,
+ 			att['w'].to_i,att['h'].to_i,xml.text,
+diff -Naur lib.orig/flickr/photos.rb lib/flickr/photos.rb
+--- lib.orig/flickr/photos.rb	2008-07-08 17:22:42.000000000 -0500
++++ lib/flickr/photos.rb	2008-07-08 17:22:31.000000000 -0500
+@@ -176,7 +176,7 @@
+ 		args= {'photo_id' => photo}
+ 		args['secret'] = secret if secret
+ 		res = @flickr.call_method('flickr.photos.getInfo',args)
+-		return Flickr::Photo.from_xml(res.elements['photo'],@flickr)
++		return Flickr::Photo.from_xml(res.elements['/photo'],@flickr)
+ 	end
+ 	
+ 	def getNotInSet(extras=nil,per_page = nil, page = nil)

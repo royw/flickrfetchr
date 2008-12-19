@@ -1,0 +1,383 @@
+# This is the configuration file for <%= "#{config[:app_name].to_s} #{config[:app_version]}" %> and is where 
+# you specify what images you want fetched from flickr for the LinuxMCE screensaver
+#
+# To take full advantage of these options, you should have an account on http://www.flickr.com
+#
+# For those who are familiar with ruby, the format for this file should be obvious :)
+# But for the vast majority, here goes:
+#
+# Comments start with an '#' and extend to the end of the line
+#
+# We are initializing the config Hash so each line starts with "config[key]".  The keys
+# are all symbols so start with a colon (":key").
+#
+# Each hash value is an Array so is enclosed in square brackets:
+#   config[:key] = []
+#
+# Empty brackets are permissible
+#
+# Each element in the value Array is a Hash so is inclosed with curly brackets:
+#  config[:key] = [{}, {}, ...]
+#
+# Each element in the Hash is a key/value pair which are seperated by a =>
+#  config[:key] = [{:key1 => value1, :key2 => value2, ...}]
+#
+# Again each key is a symbol and starts with a colon
+#
+# Values can be one of the following:
+#
+#   STRING    - a string enclosed in single quotes.  Example:  'LinuxMCE'
+#   INTEGER   - an integer number consisting of one or more digits (0-9)
+#   RANGE     - a range has the form:  INTEGER..INTEGER
+#             - Example:  100..1000 means a range fro 100 to 1000 inclusive
+#   BOOLEAN   - true OR false
+#
+# Some config values may accept different types, in that case a '|' is
+# used to denote "or".  Example:  RANGE|INTEGER|false means the value
+# can be a RANGE or an INTEGER or the BOOLEAN false.
+#
+# Each section includes an example at the end which starts with ## which show
+# proper syntax for that section.
+#
+#
+# Multiple Configuration Files
+#
+# First a word about the dual config files.  When FlickrFetchr starts, it loads 
+# /etc/flickrfetchr.conf then loads ~/.flickrfetchr.conf.  Any config definitions 
+# in the first file will be overwritten by the second.  Think of it as the 
+# /etc/flickrfetchr.conf is the global or common to all users while the 
+# ~/.flickrfetchr.conf is for the individual user.
+#
+# Normally a user will add their criteria to any already existing like:
+#
+#   config[:GROUPS] += [MY_GROUP_1, MY_GROUP_2]
+#
+# But if the user wants to replace the global (/etc) criteria, they just need to 
+# use an assignment like:
+#
+#   config[:GROUPS] = [MY_GROUP_1, MY_GROUP_2]
+#
+# And to remove a global criteria just replace it with an empty array like:
+#
+#   config[:GROUPS] = []
+#
+#
+# Advanced Configuration
+#
+# This config file is really just a ruby script so you can add any
+# ruby code you want.  My preference is to assign the hashes to a
+# constant as that cleans up the look of the code.  For example:
+#
+# ROYW2_USER_ID = '28070365@N08'
+# ROYW2_DOG_SEARCH_CRITERIA = {
+#                     :nsid => ROYW2_USER_ID, 
+#                     :tags => 'dog', 
+#                     :destination => '~/images/dogs',
+#                     :image_width_range => false,
+#                     :image_height_range => false
+#                    }
+# OUR_CANINE_FAMILY_PHOTOSET_CRITERIA = {
+#                     :nsid => ROYW2_USER_ID, 
+#                     :title => 'Our Canine Family', 
+#                     :destination => '~/images/royw2'
+#                    }
+# ROYW2_USERS_CRITERIA = {
+#                     :username => 'royw2', 
+#                     :destination => '~/images/royw2',
+#                     :image_width_range => 600,
+#                     :image_height_range => 600
+#                    }
+#
+## lets define some reusable criteria
+#
+# LINUXMCE_1024_X_768_CRITERIA = {
+#                     :limit => 100, 
+#                     :daycount => 5, 
+#                     :destination_path => '/home/flickr',
+#                     :destination_naming => :short,
+#                     :plugins => [:LinuxMCE_Plugin], 
+#                     :image_acceptable_types => ['jpg'],
+#                     :image_width_range => 600..1920,
+#                     :image_height_range => 600..1080,
+#                     :image_resize_to => {:width => 1024, :height => 768}
+#                   }
+# 
+# LINUXMCE_1080P_CRITERIA = {
+#                     :limit => 100, 
+#                     :daycount => 5, 
+#                     :destination_path => '/home/flickr',
+#                     :destination_naming => :short,
+#                     :plugins => [:LinuxMCE_Plugin], 
+#                     :image_acceptable_types => ['jpg'],
+#                     :image_width_range => 600..1920,
+#                     :image_height_range => 600..1080,
+#                     :image_resize_to => {:width => 1920, :height => 1080},
+#                     :image_fill_to => {:width => 1920, :height => 1080}
+#                   }
+#
+## now we can merge the reusable criteria into our hashes
+#
+# INTERESTING_CRITERIA = LINUXMCE_1024_X_768_CRITERIA.merge({
+#                     :destination_path_type => :date_path
+#                   })
+#
+# WOF_GROUP_CRITERIA = LINUXMCE_1080P_CRITERIA.merge({
+#                     :groupname => 'Worlds of fancy_computer generated landscapes',
+#                     :destination_path => '/home/flickr/groups/wof'
+#                   })
+#
+# DEEP_SPACE_ASTROPHOTOGRAPHY_GROUP_CRITERIA = LINUXMCE_1080P_CRITERIA.merge({
+#                     :groupname => 'Deep Space Astrophotography',
+#                     :destination_path => '/home/flickr/groups/dsa'
+#                   })
+#
+## what we did was set the criteria hash to an already defined criteria hash, 
+## then merged in some additional/replacement parameters.
+#
+## now lets go a little further and define some Top 20 IDs
+#
+## note, the easy way to find a group ID on flickr.com is to go to the group page, 
+## then right click on the "join" link and copy the link.  Now you can paste the link
+## then extract the id.
+#
+# TOP20AVIATION_ID = '60512572@N00'
+# TOP20FISHEYE_ID = '46819026@N00'
+# TOP20LONGEXPOSURE_ID = '54941127@N00'
+# TOP20BEACH_ID = '365661@N23'
+# TOP20TEXAS_ID = '612499@N22'
+# TOP20NORTHERN_LIGHTS_ID = '52669389@N00'
+# TO20FISH_ID = '57539247@N00'
+# TOP20FAKE_TILT_SHIFT_ID = '94153259@N00'
+#
+## now lets define a Top 20 criteria to serve as a parent for all of the top 20 groups
+#
+# TOP20_CRITERIA = LINUXMCE_1080P_CRITERIA.merge({
+#                     :destination_path => '/home/flickr/top20',
+#                     :limit => 20
+#                   })
+#
+## so now lets define our Top 20 groups
+#
+# TOP20AVIATION_GROUP_CRITERIA        = TOP20_CRITERIA.merge({:nsid => TOP20AVIATION_ID})
+# TOP20FISHEYE_GROUP_CRITERIA         = TOP20_CRITERIA.merge({:nsid => TOP20FISHEYE_ID})
+# TOP20LONGEXPOSURE_GROUP_CRITERIA    = TOP20_CRITERIA.merge({:nsid => TOP20LONGEXPOSURE_ID})
+# TOP20BEACH_GROUP_CRITERIA           = TOP20_CRITERIA.merge({:nsid => TOP20BEACH_ID})
+# TOP20TEXAS_GROUP_CRITERIA           = TOP20_CRITERIA.merge({:nsid => TOP20TEXAS_ID})
+# TOP20NORTHERN_LIGHTS_GROUP_CRITERIA = TOP20_CRITERIA.merge({:nsid => TOP20NORTHERN_LIGHTS_ID})
+# TO20FISH_GROUP_CRITERIA             = TOP20_CRITERIA.merge({:nsid => TO20FISH_ID})
+# TOP20FAKE_TILT_SHIFT_GROUP_CRITERIA = TOP20_CRITERIA.merge({:nsid => TOP20FAKE_TILT_SHIFT_ID})
+#
+## and finally we define our criteria sets
+#
+# config[:SEARCHES] += [ROYW2_DOG_SEARCH_CRITERIA]
+# config[:USERS] += [ROYW2_USERS_CRITERIA]
+# config[:PHOTOSETS] += [OUR_CANINE_FAMILY_PHOTOSET_CRITERIA]
+# config[:GROUPS] += [DEEP_SPACE_ASTROPHOTOGRAPHY_GROUP_CRITERIA, WOF_GROUP_CRITERIA]
+# config[:INTERESTING] += [INTERESTING_CRITERIA]
+# config[:GROUPS] += [
+# 	ANTIQUE_AND_VINTAGE_AIRCRAFT_GROUP_CRITERIA,
+# 	TOP20AVIATION_GROUP_CRITERIA,
+# 	TOP20FISHEYE_GROUP_CRITERIA,
+# 	TOP20LONGEXPOSURE_GROUP_CRITERIA,
+# 	TOP20BEACH_GROUP_CRITERIA,
+# 	TOP20TEXAS_GROUP_CRITERIA,
+# 	TOP20NORTHERN_LIGHTS_GROUP_CRITERIA,
+# 	TO20FISH_GROUP_CRITERIA,
+# 	TOP20FAKE_TILT_SHIFT_GROUP_CRITERIA
+# ]
+#
+# LinuxMCE users, you should add up all of your :limit values that you have selected 
+# and make sure the number is less than what is specified in pluto-admin, Advanced,
+# Configuration, Devices, My Devices, CORE, DCERouter, Orbiter Plug-in, Device Data,
+# Quantity.
+
+#****** Fetch photo definitions
+
+% options = {
+% :nsid => 
+% '#     :nsid => STRING OR :username => STRING,      # required',
+% 
+% :destination =>
+% "#     :destination_path => STRING,                 # optional, defaults to '.'\n" +
+% "#     :destination_path_type => :date_path|:normal # optional, defaults to :normal\n" +
+% "#                                                  #   :date_path will places files in YYYY/MM/DD under\n" +
+% "#                                                  #              the directory specified in :destination_path\n" +
+% "#                                                  #   :normal    will place files in the directory specified\n" +
+% "#                                                  #              in :destination_path\n" +
+% "#     :destination_naming => :short|:full          # optional, defaults to :full\n" +
+% "#                                                  #   :short will use the photo id for the filename\n" +
+% "#                                                  #   :full  will use the filename returned from Flickr",
+%
+% :plugins => 
+% "#     :plugins => [:LinuxMCE_Plugin]               # optional, defaults to []\n" +
+% "#                                                  #   :LinuxMCE_Plugin will integrate the downloading into LinuxMCE's\n" +
+% "#                                                  #             database, should be used only on LinuxMCE dcerouter",
+%
+% :limit =>
+% "#     :limit => INTEGER                            # optional, defaults to config[:limit]",
+%
+% :image =>
+% "#     :image_width_range => RANGE|INTEGER|false    # optional, defaults to config[:image_width_range]\n" +
+% "#     :image_height_range => RANGE|INTEGER|false   # optional, defaults to config[:image_height_range]\n" +
+% "#     :image_acceptable_types => [STRINGS]         # optional, defaults to [], which means any extension is ok\n" +
+% "#                                                  #   The strings in the array are file extensions\n" +
+% "#     :image_resize_to => {:width => INTEGER,      # optional, defaults to no resizing\n" +
+% "#                          :height => INTEGER}     #   The INTEGERS are the desired width and height in pixels.\n" +
+% "#                                                  #   Note, image resizing preserves aspect ratio.\n" +
+% "#     :image_fill_to => {:width => INTEGER,        # optional, defaults to not filling\n" +
+% "#                        :height => INTEGER,       #   The INTEGERS are the desired width and height in pixels.\n" +
+% "#                        :color => STRING}         #   The image is centered on a background with the given color\n" +
+% "#                                                  #   and dimensions.",
+%
+% :extras =>
+% "#     :extras => STRING                            # don't use",
+%
+% :page =>
+% "#     :per_page => INTEGER                         # optional, defaults to :limit\n" +
+% "#     :page => INTEGER                             # optional, defaults to 1",
+%
+% :tags =>
+% "#     :tags => STRING                              # optional, A tag to filter the pool with.\n" +
+% "#                                                  #   At the moment only one tag at a time is supported.",
+%
+% :title =>
+% "#     :title => STRING                             # optional, matches one set, default is to match all sets",
+%
+% :tag_mode =>
+% "#     :tag_mode => 'any' OR 'all'                  # optional, Either 'any' for an OR combination of tags,\n" +
+% "#                                                  #   or 'all' for an AND combination.\n" +
+% "#                                                  #   Defaults to 'any' if not specified.",
+%
+% :text =>
+% "#     :text => STRING                              # optional, A free text search. Photos who's title,\n" +
+% "#                                                  #   description or tags contain the text will be returned.",
+%
+% :min_upload_date =>
+% "#     :min_upload_date => STRING                   # optional, Minimum upload date. Photos with an upload\n" +
+% "#                                                  #   date greater than or equal to this value\n" +
+% "#                                                  #   will be returned. The date should be in the\n" +
+% "#                                                  #   form of a unix timestamp.",
+%
+% :max_upload_date =>
+% "#     :max_upload_date => STRING                   # optional, Maximum upload date. Photos with an upload\n" +
+% "#                                                  #   date less than or equal to this value will be returned.\n" +
+% "#                                                  #   The date should be in the form of a unix timestamp",
+%
+% :min_taken_date =>
+% "#     :min_taken_date => STRING                    # optional, Minimum taken date. Photos with an taken\n" +
+% "#                                                  #   date greater than or equal to this value will be returned.\n" +
+% "#                                                  #   The date should be in the form of a mysql datetime.",
+%
+% :max_taken_date =>
+% "#     :max_taken_date => STRING                    # optional, Maximum taken date. Photos with an taken\n" +
+% "#                                                  #   date less than or equal to this value will be returned.\n" +
+% "#                                                  #   The date should be in the form of a mysql datetime.",
+%
+% :license =>
+% "#     :license => STRING                           # optional, The license id for photos (for possible values\n" +
+% "#                                                  #   see the flickr.photos.licenses.getInfo method).\n" +
+% "#                                                  #   Multiple licenses may be comma-separated.",
+%
+% :date =>
+% "#     :date => STRING                              # optional, a date string",
+%
+% :daycount =>
+% "#     :daycount => INTEGER                         # optional, the number of days up to :date to look\n" +
+% "#                                                  # for photos.  defaults = 0 (i.e., just :date)"
+% }
+%
+
+#***********************************************************************
+# To fetch photos from a user account using either the flickr user ID or the user name:
+<%= gen_config_doc(:USERS, options, [:nsid, :destination, :plugins, :limit, :image, :extras, :page]) %>
+##
+## this example selects all pictures (up to config[:limit]) from the user "royw2" flickr account:
+## config[:USERS] += [{:username => 'royw2'}]
+
+#***********************************************************************
+# you can also fetch photos from flickr groups again by either group ID or group name:
+<%= gen_config_doc(:GROUPS, options, [:nsid, :destination, :plugins, :limit, :image, :tags, :extras, :page]) %>
+##
+## this example will fetch photos from two groups: 'Deep Space Astrophotography' and 'Worlds of fancy_computer generated landscapes'.
+## The group id for 'Deep Space Astrophotography' is '16194850@N00' so we will use it:
+## config[:GROUPS] += [{:nsid => '16194850@N00'}, {:groupname => 'Worlds of fancy_computer generated landscapes'}]
+
+#***********************************************************************
+<%= gen_config_doc(:PHOTOSETS, options, [:nsid, :destination, :plugins, :limit, :image, :title, :extras]) %>
+##
+## Say I want to keep a local copy of one of my photosets ('Our Canine Family'), but not include it in the LinuxMCE screensaver.
+## Also lets get the largest possible file by disabling image size checking for both width and height.
+## config[:PHOTOSETS] += [{:username => 'royw2', :title => 'Our Canine Family', :destination => '/home/royw/photos/dogs'
+##                        :image_width_range => false, :image_height_range => false}]
+
+#***********************************************************************
+<%= gen_config_doc(:SEARCHES, options, [:nsid, :destination, :plugins, :limit, :image, :tags, :extras, :tag_mode, :text, :min_upload_date, :max_upload_date, :min_taken_date, :max_taken_date, :license, :page]) %>
+##
+## Now say I want to include photos of LinuxMCE systems that are on flickr and up to 20 computer case mods and let's
+## skip images below 800x600 but otherwise take the largest possible image.
+## config[:SEARCHES] += [{:text => 'LinuxMCE', :image_width_range => 800, :image_height_range => 600}, 
+##                       {:tags => 'computer,case,mods', :limit => 20, :image_width_range => 800, :image_height_range => 600}
+##                      ]
+
+#***********************************************************************
+<%= gen_config_doc(:INTERESTING, options, [:nsid, :destination, :plugins, :limit, :image, :date, :daycount, :extras, :page]) %>
+##
+## Say I'm feeling nostalgic for the orginal photo selection in LinuxMCE:
+## config[:INTERESTING] += [{:limit => 100, :daycount => 5, :destination_path => '/home/flickr',
+##                           :destination_path_type => :date_path, :destination_naming => :short,
+##                           :plugins => [:LinuxMCE_Plugin], :image_acceptable_types => ['jpg'],
+##                           :image_resize_to => {:width => 1024, :height => 768}
+##                         }]
+
+#****** Global Fetch Options
+# The following are global options with the default values
+# please note that the value syntax differs from the above sections.
+
+#***********************************************************************
+# The maximum number of files to attempt to download at a time
+## config[:limit] = <%= config[:limit] %>
+
+#***********************************************************************
+# Sometimes downloading from flickr is unreliable, so we can retry the
+# operation this many times:
+## config[:max_save_attempts] = <%= config[:max_save_attempts] %>
+
+#***********************************************************************
+# When FlickrFetcher downloads an image, it limits downloading to the largest possible image that is
+# less than or equal to config[:image_max_size] and greater than or equal to config[:image_min_size].
+
+# This is the maximum photo size to download.  If the requested photo exceeds this size in either width or height,
+# then we try to find the next smaller image.  If there are no smaller images, then the image is not downloaded.
+## config[:image_width_range] = 1920
+## config[:image_height_range] = 1080
+#
+# Setting config[:image_width_range] to an INTEGER sets a minimum image width
+## config[:image_width_range] = 800
+#
+# Setting config[:image_width_range] to false disables checking image width
+## config[:image_width_range] = false
+#
+# Setting config[:image_height_range] to an INTEGER sets a minimum image height
+## config[:image_height_range] = 600
+#
+# Setting config[:image_height_range] to false disables checking image height
+## config[:image_height_range] = false
+
+#***********************************************************************
+# When an image is downloaded, resize it to this size.
+## config[:image_resize_to]  = {:width => 1920, :height => 1080}
+
+#***********************************************************************
+# Where to log messages.  Set to nil to disable logging to a file.  Must be a nil or a filespec.
+## config[:logfile] = nil
+## config[:logfile] = Logger.new(config[:app_name])
+
+#***********************************************************************
+# What log messages are written to the logfile.  Choose one of the following:
+# 'DEBUG', 'INFO', or 'WARN'
+# I recommend 'INFO' (the default) for normal usage and 'DEBUG' for troubleshooting.
+# 'WARN' will only show warnings and errors and is therefore the least chatty.
+## config[:logfile_level] = 'DEBUG'
+## config[:logfile_level] = 'INFO'
+## config[:logfile_level] = 'WARN'
+

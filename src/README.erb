@@ -1,0 +1,57 @@
+Welcome to <%= "#{APP_NAME} #{APP_VERSION}" %>, a Flickr photo retrieval script.
+
+This script will fetch photos from Flickr.com.  You can specify to select photos based on users, photosets, groups, interestingness, or searches.  Multiple selection criteria is allowed (i.e., zero or more users AND zero or more photosets AND zero or more groups...).  Further you can select images based on size (larger or smaller than a threshold or within a range).  Also optionally resize and/or fill to a size.
+
+You will need a Flickr account and will have to visit Flickr to authorize FlickrFetchr for your account only once.  The first time you run FlickrFetchr it will give you the URL you have to visit.
+
+This script was originally designed as a replacement for LinuxMCE's flickr.pl script but has since evolved to be a high-level object with a command line application.  Currently the LinuxMCE support is provide via an optional plugin.
+
+== Documentation
+
+Further documentation is available in doc/index.html
+
+== INSTALLATION
+
+To install:
+
+Extract <%= dist_filename %>:
+
+  tar xvf <%= dist_filename %>
+
+Change to the created directory:
+
+  cd flickrfetchr
+
+Run the setup script:
+
+  For LinuxMCE 0710 system:
+  
+    ./setup-linuxmce
+    
+  For Kubuntu '0710' and '0804' systems:
+  
+    ./setup-kubuntu
+
+When prompted, you will need to copy a URL then load it into your web browser (the web browser does not have to be running on the dcerouter) to authenticate FlickrFetchr with your Flickr account.
+
+After the setup script completes, FlickrFetcher is installed for stand-alone usage.  You may want to read the config file ~/.flickrfetchr.conf and set up some download criteria to verify that you can actually fetch photos.  There are some examples in it that should get you up and running quickly.
+
+LinuxMCE users note that FlickrFetchr must be ran as sudo (root permissions) to be able to save files in /home/flickr.
+
+
+== Replacing Flickr.pl with FlickrFetchr.rb
+
+From pluto-admin, Advanced, Configuration, Devices, Show Device Tree, My Devices, CORE, DCERouter, Orbiter Plug-in:
+
+  change File Name and Path from:
+    
+    /usr/pluto/bin/flickr.pl
+    
+  to:
+  
+    /usr/local/bin/flickrfetchr.rb
+
+Note, the Width, Height, and Quantity fields are not used by FlickrFetchr.  Instead use the /etc/flickrfetchr.conf or /root/.flickrfetchr.conf config files.
+
+That should do it (you may have to restart the DCERouter).  Within 24 hours the new pictures should start to show up in the screen saver.  You can verify by examining the log file:  /var/log/flickrfetchr*.log
+

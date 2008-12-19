@@ -1,0 +1,175 @@
+#!/usr/bin/env ruby
+
+# Copyright 2008 by Roy Wright
+# License: GPL version 2 (http://www.opensource.org/licenses/gpl-2.0.php)
+
+# == Synopsis
+#
+# This file is used to install FlickrFetchr onto a kubuntu (0710, 0804) system
+#
+# == Details
+#
+# This script does not install the the LinuxMCE plugin
+#
+# == Usage
+#
+# Extract the FlickrFetchr archive then change to the extracted directory
+# and run setup
+#
+#  tar xzf flickrfetchr-*.tgz
+#  cd flickrfetchr
+#
+# Now run this setup script:
+#
+#  setup-kubuntu
+#
+# Follow any instructions from the setup script.
+#
+# == Author
+# Roy Wright
+#
+
+require 'rubygems'
+require 'logger'
+require 'commandline/optionparser'
+include CommandLine
+
+DEPLOY_TO = '/usr/local/bin'
+SRC = 'src'
+
+class FlickrFetchrSetup
+  def initialize(config, logger)
+    @config = config
+    @logger = logger
+  end
+
+  def execute
+    desc "First install the ancient versions of support tools furnished via kubuntu"
+    packages = %w(libyaml-ruby libzlib-ruby rubygems ruby1.8-dev build-essential libmysql-ruby1.8 libmysql-ruby irb imagemagick)
+    packages.each do |pkg|
+      sudo "apt-get install -y #{pkg}"
+    end
+
+    desc "then upgrade gem to the the lastest version"
+    sudo "gem update -y"
+    sudo "gem update -y --system"
+    sudo "rm /usr/bin/gem"
+    sudo "ln -s /usr/bin/gem1.8 /usr/bin/gem"
+
+    desc "now install the required gems"
+    gems = %w(rflickr log4r commandline, rmagick)
+    gems.each do |name|
+      sudo "gem install #{name}"
+    end
+
+    desc "Unfortunately, rflickr has a minor bug that we need to patch"
+    sudo "cp files/rflickr-2006.02.01.patch.1 /usr/lib/ruby/gems/1.8/gems/rflickr-2006.02.01/"
+    run "cd /usr/lib/ruby/gems/1.8/gems/rflickr-2006.02.01/ && sudo patch -p0 <rflickr-2006.02.01.patch.1"
+
+    desc "that's the preliminaries, so now install flickrfetchr.rb into #{DEPLOY_TO}"
+    sudo "mv #{SRC}/flickrfetchr.rb #{DEPLOY_TO}"
+    sudo "mv #{SRC}/flickrfetchr.conf.erb #{DEPLOY_TO}"
+
+    desc "Now to setup FlickrFetcher"
+    sudo "flickrfetchr.rb --setup"
+    
+    sudo "chown linuxmce.linuxmce #{ENV['HOME']}/.flickrfetchr.conf"
+    sudo "chmod 666 /var/log/flickrfetchr*.log"
+    
+    desc "FlickrFetcher is installed for stand-alone usage.  You may want to read the config file ~/.flickrfetchr.conf and set up some download criteria to verify that you can actually fetch photos.  There are some examples in it that should get you up and running quickly."
+  end
+  
+  def desc(msg)
+    puts
+    puts msg
+  end
+
+  def sudo(cmd)
+    puts "sudo #{cmd}" if @config[:verbose]
+    system "sudo #{cmd}" unless @config[:pretend]
+  end
+  
+  def run(cmd)
+    puts cmd if @config[:verbose]
+    system cmd unless @config[:pretend]
+  end
+  
+end
+
+# running this file from the command line?
+if __FILE__ == $0
+
+  # == Synopsis
+  # command line exit codes
+  class ExitCode
+    UNKNOWN = 3
+    CRITICAL = 2
+    WARNING = 1
+    OK = 0
+  end
+
+  module Runner
+
+    def self.run(args)
+      @logger = Logger.new(STDERR)
+
+      configFile = '.' + File.basename(__FILE__, ".*") + 'rc'
+      p ['configFile', configFile] if $DEBUG
+
+      # load config values from defaultConfig(), then ~/#{configFile}, then #{configFile}
+      homeConfigFile = File.join("#{ENV['HOME']}", configFile)
+      @config = defaultConfig()
+      @config.merge(YAML.load_file(homeConfigFile)) if File.exist?(homeConfigFile)
+      @config.merge(YAML.load_file(configFile)) if File.exist?(configFile)
+
+      # parse the command line
+      options = setupParser()
+      begin
+        od = options.parse(args)
+        @config[:verbose] = od["--verbose"]
+        @config[:pretend] = od["--pretend"]
+        p ['@config', @config] if $DEBUG
+      rescue
+        @logger.error $!.to_s
+        @logger.error $!.backtrace.to_s
+        @logger.error(options.to_s)
+        exit ExitCode::CRITICAL
+      end
+
+      # create and execute class instance here
+      begin
+        setup = FlickrFetchrSetup.new(@config, @logger)
+        setup.execute
+      rescue
+        @logger.error $!.to_s
+        @logger.error $!.backtrace.to_s
+        @logger.error(options.to_s)
+        exit ExitCode::CRITICAL
+      end
+    end
+
+    # == Synopsis
+    # default configuration values
+    def self.defaultConfig()
+      config = {}
+      config
+    end
+
+    # == Synopsis
+    # setup the command line option parser
+    # ref http://optionparser.rubyforge.org/
+    def self.setupParser()
+      options = OptionParser.new()
+      options << Option.new(:flag, :names => %w(--help), 
+                            :opt_found => lambda {@logger.error(options.to_s) ; exit ExitCode::OK}, 
+                            :opt_description => "This usage information")
+      options << Option.new(:flag, :names => %w(--verbose -v))
+      options << Option.new(:flag, :names => %w(--pretend -p))
+      options
+    end
+
+  end
+  Runner.run(ARGV)
+  exit ExitCode::OK
+end
+
